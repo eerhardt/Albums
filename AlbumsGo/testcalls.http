@@ -1,0 +1,25 @@
+########################
+#### test albums #######
+########################
+
+### get all albums
+GET http://localhost:8080/albums
+content-type: application/json
+
+### add a new album
+POST http://localhost:8080/albums
+content-type: application/json
+
+{
+    "id": "4",
+    "title": "The Lamb Lies Down on Broadway",
+    "artist": "Genesis",
+    "price": 38.99
+}
+
+### get specific album
+GET http://localhost:8080/albums/4
+content-type: application/json
+
+
+

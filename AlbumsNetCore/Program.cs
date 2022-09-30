@@ -1,4 +1,6 @@
 // Albums slice to seed record album data.
+using System.Diagnostics.CodeAnalysis;
+
 var myAlbums = new[]
 {
     new Album("1", "Pawn Hearts", "Van der Graaf Generator", 26.99),
@@ -14,6 +16,7 @@ app.MapPost("/albums", PostAlbums);
 app.Run();
 
 // GetAlbums responds with the list of all albums as JSON.
+[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Album))] // allows JSON serialization to work
 IResult GetAlbums() => Results.Ok(myAlbums);
 
 // PostAlbums adds an album from JSON received in the request body.

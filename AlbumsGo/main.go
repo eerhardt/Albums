@@ -2,8 +2,9 @@ package main
 
 import (
 	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"fmt"
+	"time"
+	"github.com/eerhardt/gin"
 )
 
 // album represents data about a record album.
@@ -24,6 +25,23 @@ var albums = []album{
 func main() {
 	router := gin.Default()
 	router.SetTrustedProxies(nil)
+
+	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+
+		// your custom format
+		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			param.ClientIP,
+			param.TimeStamp.Format(time.RFC3339Nano),
+			param.Method,
+			param.Path,
+			param.Request.Proto,
+			param.StatusCode,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+	  }))
+
 	router.GET("/albums", getAlbums)
 	router.GET("/albums/:id", getAlbumByID)
 	router.POST("/albums", postAlbums)

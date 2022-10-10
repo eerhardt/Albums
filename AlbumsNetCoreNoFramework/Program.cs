@@ -59,7 +59,7 @@ while(http.IsListening)
 }
 
 // GetAlbums responds with the list of all albums as JSON.
-string GetAlbums() => JsonSerializer.Serialize(myAlbums, typeof(Album[]), AlbumArrayJsonSerializerContext.Default);
+string GetAlbums() => JsonSerializer.Serialize(myAlbums, typeof(Album[]), AlbumJsonSerializerContext.Default);
 
 // PostAlbums adds an album from JSON received in the request body.
 string PostAlbums(Album album)
@@ -75,13 +75,8 @@ string GetAlbumById(string id) => myAlbums.FirstOrDefault(a => a.Id == id) is { 
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(Album))]
-partial class AlbumJsonSerializerContext : JsonSerializerContext
-{
-}
-
-[JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(Album[]))]
-partial class AlbumArrayJsonSerializerContext : JsonSerializerContext
+partial class AlbumJsonSerializerContext : JsonSerializerContext
 {
 }
 

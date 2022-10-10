@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+RUN apt update
+RUN apt install -y clang zlib1g-dev
+
+WORKDIR /src
+COPY ["AlbumsNetCore.csproj", "."]
+RUN dotnet restore "./AlbumsNetCore.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet publish "AlbumsNetCore.csproj" -c Release -o /app/publish -r linux-x64 --self-contained
+
+# remove the symbols so they aren't part of the published app
+RUN rm -rf /app/publish/*.dbg
+
+FROM mcr.microsoft.com/dotnet/runtime-deps AS final
+ENV DOTNET_URLS=http://+:5000
+EXPOSE 5000
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["/app/AlbumsNetCore"]

@@ -18,10 +18,7 @@ ADD . /go/src/albums/
 RUN git config --global include.path /mygitconfig
 
 WORKDIR /go/src/albums
-# we use 'docker secrets' for the gitconfig - so the content is not saved in this image/layer
-# https://docs.docker.com/develop/develop-images/build_enhancements/#new-docker-build-secret-information
-# we mount our gitconfig with the azure token and then run go install
-RUN --mount=type=secret,id=gitconfig,dst=/mygitconfig go install -v ./...
+RUN go install -v ./...
 
 RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/albums
 

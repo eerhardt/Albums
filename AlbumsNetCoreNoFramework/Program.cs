@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -7,6 +8,7 @@ var http = new HttpListener();
 var host = "127.0.0.1";
 var port = 5000;
 var contentType = "application/json";
+var concurrency = 10;
 
 http.Prefixes.Add($"http://{host}:{port}/");
 http.Start();
@@ -18,10 +20,18 @@ var myAlbums = new[]
     new Album("3", "Tales from Topographic Oceans", "Yes", 32.99)
 };
 
-// listen
-while(http.IsListening)
+#pragma warning disable 4014 // no await
+for(var i=0; i<concurrency; i++) http.GetContextAsync().ContinueWith(ProcessRequestHandler);
+#pragma warning disable 4014
+
+System.Console.ReadLine();
+
+async void ProcessRequestHandler(Task<HttpListenerContext> result)
 {
-    var context = await http.GetContextAsync();
+    var context = await result;
+
+    if (!http.IsListening) return;
+    http.GetContextAsync().ContinueWith(ProcessRequestHandler);
 
     var responseString = "";
     if (context.Request.RawUrl.StartsWith("/albums", StringComparison.OrdinalIgnoreCase))

@@ -33,7 +33,7 @@ while(http.IsListening)
             Album album;
             using (var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
             {
-                album = (Album)JsonSerializer.Deserialize(reader.ReadToEnd(), typeof(Album), AlbumJsonSerializerContext.Default);
+                album = await JsonSerializer.DeserializeAsync<Album>(context.Request.InputStream, AlbumJsonSerializerContext.Default.Album);
             }
             responseString = PostAlbums(album);
         }

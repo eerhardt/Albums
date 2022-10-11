@@ -39,12 +39,7 @@ async void ProcessRequestHandler(Task<HttpListenerContext> result)
         // POST
         if (context.Request.HttpMethod.Equals("POST",  StringComparison.OrdinalIgnoreCase))
         {
-            // read content
-            Album album;
-            using (var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
-            {
-                album = await JsonSerializer.DeserializeAsync<Album>(context.Request.InputStream, AlbumJsonSerializerContext.Default.Album);
-            }
+            var album = await JsonSerializer.DeserializeAsync<Album>(context.Request.InputStream, AlbumJsonSerializerContext.Default.Album);
             responseString = PostAlbums(album);
         }
 

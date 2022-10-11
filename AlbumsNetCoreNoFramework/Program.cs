@@ -8,8 +8,9 @@ var http = new HttpListener();
 var host = "127.0.0.1";
 var port = 5000;
 var concurrency = 10;
+var url = $"http://{host}:{port}/";
 
-http.Prefixes.Add($"http://{host}:{port}/");
+http.Prefixes.Add(url);
 http.Start();
 
 var myAlbums = new[]
@@ -23,6 +24,8 @@ var myAlbums = new[]
 for(var i=0; i<concurrency; i++) http.GetContextAsync().ContinueWith(ProcessRequestHandler);
 #pragma warning disable 4014
 
+System.Console.WriteLine($"Application started. Listening on {url}");
+System.Console.WriteLine("Press ENTER to exit.");
 System.Console.ReadLine();
 
 async void ProcessRequestHandler(Task<HttpListenerContext> result)

@@ -69,7 +69,7 @@ async void ProcessRequestHandler(Task<HttpListenerContext> result)
 
 
 // GetAlbums responds with the list of all albums as JSON.
-Response GetAlbums() => new Response(JsonSerializer.Serialize(myAlbums, typeof(Album[]), AlbumJsonSerializerContext.Default), 200);
+Response GetAlbums() => new Response(JsonSerializer.Serialize(myAlbums, AlbumJsonSerializerContext.Default.AlbumArray), 200);
 
 // PostAlbums adds an album from JSON received in the request body.
 Response PostAlbums(Album album)

@@ -22,7 +22,8 @@ var albums = []album{
 }
 
 func main() {
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
 	router.SetTrustedProxies(nil)
 	router.GET("/albums", getAlbums)
 	router.GET("/albums/:id", getAlbumByID)

@@ -12,6 +12,14 @@ jobs:
     port: 5000
     readyStateText: Application started
 
+  httplistener-alpine:
+    source:
+      localFolder: ..
+      dockerFile: AlbumsNetCoreNoFramework/Dockerfile
+      dockerImageName: albums-httplistener-alpine
+    port: 5000
+    readyStateText: Application started
+
   netcore-debian:
     source:
       localFolder: ..
@@ -32,6 +40,15 @@ scenarios:
   albums-netcore-alpine:
     application:
       job: netcore-alpine
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        path: /albums/1
+
+  albums-httplistener-alpine:
+    application:
+      job: httplistener-alpine
     load:
       job: bombardier
       variables:

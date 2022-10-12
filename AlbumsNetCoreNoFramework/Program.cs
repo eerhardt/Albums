@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var http = new HttpListener();
 
-var host = "127.0.0.1";
+var host = OperatingSystem.IsWindows() ? "127.0.0.1" : "*";
 var port = 5000;
 var concurrency = 10;
 var url = $"http://{host}:{port}/";
@@ -24,9 +25,10 @@ var myAlbums = new[]
 for(var i=0; i<concurrency; i++) http.GetContextAsync().ContinueWith(ProcessRequestHandler);
 #pragma warning disable 4014
 
-System.Console.WriteLine($"Application started. Listening on {url}");
-System.Console.WriteLine("Press ENTER to exit.");
-System.Console.ReadLine();
+Console.WriteLine($"Application started. Listening on {url}");
+Console.WriteLine("Press CTRL+C to shut down.");
+await WaitForShutdown();
+Console.WriteLine("Application is shutting down...");
 
 async void ProcessRequestHandler(Task<HttpListenerContext> result)
 {
@@ -36,13 +38,13 @@ async void ProcessRequestHandler(Task<HttpListenerContext> result)
     http.GetContextAsync().ContinueWith(ProcessRequestHandler);
 
     Response response;
-    if (context.Request.RawUrl.StartsWith("/albums", StringComparison.OrdinalIgnoreCase))
+    if (context.Request.RawUrl?.StartsWith("/albums", StringComparison.OrdinalIgnoreCase) == true)
     {
         // POST
         if (context.Request.HttpMethod.Equals("POST",  StringComparison.OrdinalIgnoreCase))
         {
-            var album = await JsonSerializer.DeserializeAsync<Album>(context.Request.InputStream, AlbumJsonSerializerContext.Default.Album);
-            response = PostAlbums(album);
+            var album = await JsonSerializer.DeserializeAsync(context.Request.InputStream, AlbumJsonSerializerContext.Default.Album);
+            response = PostAlbums(album!);
         }
 
         // GET
@@ -66,8 +68,6 @@ async void ProcessRequestHandler(Task<HttpListenerContext> result)
     }
 }
 
-
-
 // GetAlbums responds with the list of all albums as JSON.
 Response GetAlbums() => new Response(JsonSerializer.Serialize(myAlbums, AlbumJsonSerializerContext.Default.AlbumArray), 200);
 
@@ -82,6 +82,22 @@ Response PostAlbums(Album album)
 Response GetAlbumById(string id) => myAlbums.FirstOrDefault(a => a.Id == id) is { } album ? 
                                            new Response(JsonSerializer.Serialize(album, AlbumJsonSerializerContext.Default.Album), 200) : 
                                            new Response("album not found", 404);
+
+Task WaitForShutdown()
+{
+    TaskCompletionSource taskSource = new TaskCompletionSource();
+    Action<PosixSignalContext> handler = ctx =>
+    {
+        ctx.Cancel = true;
+        taskSource.SetResult();
+    };
+
+    PosixSignalRegistration.Create(PosixSignal.SIGINT, handler);
+    PosixSignalRegistration.Create(PosixSignal.SIGQUIT, handler);
+    PosixSignalRegistration.Create(PosixSignal.SIGTERM, handler);
+
+    return taskSource.Task;
+}
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(Album))]

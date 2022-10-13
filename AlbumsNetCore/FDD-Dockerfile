@@ -1,0 +1,16 @@
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
+ARG SERVER_GC=true
+
+WORKDIR /src
+COPY ["AlbumsNetCore.csproj", "."]
+RUN dotnet restore "./AlbumsNetCore.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet publish "AlbumsNetCore.csproj" -c Release -o /app/publish -p:PublishAot=false -p:ServerGarbageCollection=${SERVER_GC}
+
+FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS final
+ENV DOTNET_URLS=http://+:5000
+EXPOSE 5000
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["/app/AlbumsNetCore"]

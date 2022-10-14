@@ -12,4 +12,17 @@
     <StripSymbols Condition="'$(Configuration)' == 'Release'">true</StripSymbols>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(OptimalCoreClr)' == 'true'">
+    <PublishAot>false</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Work around https://github.com/dotnet/linker/issues/3061 -->
+    <_ExtraTrimmerArgs Condition="'$(PublishTrimmed)' == 'true'">$(_ExtraTrimmerArgs) --keep-metadata parametername</_ExtraTrimmerArgs>
+  </PropertyGroup>
+
 </Project>

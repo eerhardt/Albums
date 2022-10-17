@@ -36,6 +36,13 @@ jobs:
     port: 5000
     readyStateText: Application started
 
+  net-nodocker:
+    source:
+      localFolder: ../AlbumsNetCore
+      project: AlbumsNetCore.csproj
+    port: 5000
+    readyStateText: Application started
+
   go-alpine:
     source:
       localFolder: ..
@@ -66,6 +73,15 @@ scenarios:
   albums-net-debian:
     application:
       job: net-debian
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        path: /albums/1
+
+  albums-net-nodocker:
+    application:
+      job: net-nodocker
     load:
       job: bombardier
       variables:

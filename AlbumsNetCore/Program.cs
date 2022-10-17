@@ -8,11 +8,37 @@ var myAlbums = new[]
     new Album("3", "Tales from Topographic Oceans", "Yes", 32.99)
 };
 
+#if MINIMAL_STARTUP
+
+var app = new WebHostBuilder()
+    .UseKestrel(c => c.ListenLocalhost(5000))
+    .UseEnvironment(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production")
+    .ConfigureServices(services =>
+    {
+        services.AddRouting();
+    })
+    .Configure(app =>
+    {
+        app.UseRouting();
+        app.UseEndpoints(routes =>
+        {
+            routes.MapGet("/albums", GetAlbums);
+            routes.MapGet("/albums/{id}", GetAlbumById);
+            routes.MapPost("/albums", PostAlbums);
+        });
+    })
+    .Build();
+
+#else
+
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 app.MapGet("/albums", GetAlbums);
 app.MapGet("/albums/{id}", GetAlbumById);
 app.MapPost("/albums", PostAlbums);
+
+#endif
+
 app.Run();
 
 // GetAlbums responds with the list of all albums as JSON.

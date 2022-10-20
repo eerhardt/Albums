@@ -53,7 +53,27 @@ IResult PostAlbums(Album album)
 }
 
 // GetAlbumById locates the album whose ID value matches the id parameter sent by the client, then returns that album as a response.
-IResult GetAlbumById(string id) => myAlbums.FirstOrDefault(a => a.Id == id) is { } album ? Results.Ok(album) : Results.NotFound("album not found");
+async Task GetAlbumById(HttpContext context)
+{
+    if (context.Request.RouteValues.TryGetValue("id", out var idObj) && idObj is string id)
+    {
+        Album? album = myAlbums.FirstOrDefault(a => a.Id == id);
+        if (album is not null) 
+        {
+            context.Response.StatusCode = 200;
+            await context.Response.Body.WriteAsync(Data.ResponseBody);
+            return;
+        }
+    }
+
+    context.Response.StatusCode = 404;
+    await context.Response.WriteAsync("album not found");
+}
 
 // Album represents data about a record album.
 internal record Album(string Id, string Title, string Artist, double Price);
+
+static class Data
+{
+    public static byte[] ResponseBody = """{ "Id": "1", "Title": "Pawn Hearts", "Artist": "Van der Graaf Generator", "Price": 26.99 }"""u8.ToArray();
+}

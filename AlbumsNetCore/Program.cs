@@ -1,5 +1,5 @@
 // Albums slice to seed record album data.
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 var myAlbums = new[]
 {
@@ -8,41 +8,22 @@ var myAlbums = new[]
     new Album("3", "Tales from Topographic Oceans", "Yes", 32.99)
 };
 
-#if MINIMAL_STARTUP
+var builder = WebApplication.CreateSlimBuilder(args);
+builder.Logging.AddConsole();
 
-var app = new WebHostBuilder()
-    .UseKestrel(c => c.ListenLocalhost(5000))
-    .UseEnvironment(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production")
-    .ConfigureServices(services =>
-    {
-        services.AddRouting();
-    })
-    .Configure(app =>
-    {
-        app.UseRouting();
-        app.UseEndpoints(routes =>
-        {
-            routes.MapGet("/albums", GetAlbums);
-            routes.MapGet("/albums/{id}", GetAlbumById);
-            routes.MapPost("/albums", PostAlbums);
-        });
-    })
-    .Build();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+});
 
-#else
-
-var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 app.MapGet("/albums", GetAlbums);
 app.MapGet("/albums/{id}", GetAlbumById);
 app.MapPost("/albums", PostAlbums);
 
-#endif
-
 app.Run();
 
 // GetAlbums responds with the list of all albums as JSON.
-[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Album))] // allows JSON serialization to work
 IResult GetAlbums() => Results.Ok(myAlbums);
 
 // PostAlbums adds an album from JSON received in the request body.
@@ -57,3 +38,8 @@ IResult GetAlbumById(string id) => myAlbums.FirstOrDefault(a => a.Id == id) is {
 
 // Album represents data about a record album.
 internal record Album(string Id, string Title, string Artist, double Price);
+
+[JsonSerializable(typeof(Album[]))]
+internal partial class AppJsonSerializerContext : JsonSerializerContext
+{
+}
